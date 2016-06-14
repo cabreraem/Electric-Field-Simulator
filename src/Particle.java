@@ -1,7 +1,3 @@
-import javafx.scene.shape.Circle;
-
-import java.awt.*;
-
 /**
  * Created by emiliacabrera on 5/7/16.
  */
@@ -11,8 +7,8 @@ public class Particle {
     private double posX;
     private double posY;
     private double diam;
-    private Circle pos;
     private boolean fixed;
+    private boolean positive;
     private double mass;
     private double forcesX;
     private double forcesY;
@@ -22,11 +18,16 @@ public class Particle {
 
     public Particle(double c, int x, int y, boolean f, double m, double sx, double sy) {
         charge = c;
+
+        if(charge > 0)
+            positive = true;
+
+        else
+            positive = false;
+
         diam = 20;
         posX = x;
         posY = y;
-
-        pos = new Circle(x, y, 10);
         fixed = f;
         mass = m;
         forcesX = 0;
@@ -36,15 +37,18 @@ public class Particle {
     }
 
     public Particle(int x, int y, boolean b){
-        charge = 1.6 * Math.pow(10, -19);
         diam = 20;
         posX = x;
         posY = y;
 
-        if(b)
+        if(b) {
             mass = Math.pow(10, -10);
-        else
+            charge = 1.6 * Math.pow(10, -19);
+        }
+        else {
             mass = 9.1 * Math.pow(10, -31);
+            charge = 1.6 * Math.pow(10, -19);
+        }
         forcesX = 0;
         forcesY = 0;
 
@@ -65,6 +69,10 @@ public class Particle {
 
     public double getDiam(){ return diam;}
 
+    public boolean isPositive() {
+        return positive;
+    }
+
     public boolean isFixed() {
         return fixed;
     }
@@ -81,28 +89,47 @@ public class Particle {
         return speedY;
     }
 
+    //Setters
+
+    public void setSpeedX(double speedX) {
+        this.speedX = speedX;
+    }
+
+    public void setSpeedY(double speedY) {
+        this.speedY = speedY;
+    }
+
 
     //Mathematical methods
+
+    //post: returns distance between centers of two particles
+    public double distance(Particle p){
+        double x2 = p.getPosX();
+        double y2 = p.getPosY();
+
+        //r = distance between centers of the two particles
+        double r = Math.sqrt((posX-x2)*(posX-x2) + (posY-y2)*(posY-y2))* Math.pow(10, -6);
+
+        return r * Math.pow(10, 2);
+    }
 
     //post: returns magnitude of force between two charged particles
     public double findForce(Particle p){
         double x2 = p.getPosX();
         double y2 = p.getPosY();
 
-        //r = distance between centers of the two particles
-        double r = Math.sqrt((posX-x2)*(posX-x2) + (posY-y2)*(posY-y2));
+        double r = distance(p);
 
         // Force = kq(1)q(2)/r^2 equation
         double force = charge * p.getCharge() / Math.pow(r, 2);
 
-        double angle = Math.tan((y2-posY)/(x2-posX));
-
         //adds X component of this force to total X forces acting on particle
-        double addForceX = force * Math.cos(angle);
+        double addForceX = force * (posX - x2) / r;
         forcesX -= addForceX;
 
+
         //adds Y component of this force to total Y forces acting on particle
-        double addForceY = force * Math.sin(angle);
+        double addForceY = force * (posY - y2) / r;
         forcesY -= addForceY;
 
         return Math.abs(force);
@@ -120,6 +147,8 @@ public class Particle {
 
         forcesX = 0;
         forcesY = 0;
+
+        System.out.println(accelX);
     }
 
     public void move(){

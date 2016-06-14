@@ -37,10 +37,23 @@ public class Simulator extends JPanel implements ActionListener, MouseListener{
 
     public void update(){
         for(int i= 0; i < movingParts.size(); i++){
-            for (int j = 0; j < fixedParts.size(); j++) {
-                movingParts.get(i).findForce(fixedParts.get(j));
-            }
+            Particle temp = movingParts.get(i);
 
+            for (int j = 0; j < fixedParts.size(); j++) {
+                Particle check = fixedParts.get(j);
+                temp.findForce(check);
+
+                //if particles are the same charge and they intersect, it stops moving
+                if((temp.isPositive() && check.isPositive()) || !(temp.isPositive() && check.isPositive())){
+                    if(temp.distance(check) < temp.getDiam()/ 2. + check.getCharge()/2.){
+                        movingParts.remove(i);
+                    }
+                }
+
+                else{
+
+                }
+            }
 
             for(int k= 0; k< movingParts.size(); k++){
                 if( i!=k)
